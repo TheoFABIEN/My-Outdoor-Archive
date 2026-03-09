@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Hiking Log Map</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="style.css">
+
+<style>
+#map {
+height: 100vh;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="sidebar" style="padding:10px; background:#fff;">
+  <h3>Hike filters : </h3>
+
+  <p>
+  <label for="difficulty">Difficulty of hikes :</label>
+  <select id="difficulty">
+    <option value="">All</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+  </select>
+  </p>
+
+  <p>
+  <label for="gaz">Exposure to the void :</label>
+  <select id="gaz">
+    <option value="">All</option>
+    <option value="true">Yes</option>
+    <option value="false">No</option>
+  </select>
+  </p>
+
+  <button id="applyFilters">Apply</button>
+
+  <h3>Layers</h3>
+  <input type="checkbox" id="toggleHikes" checked>Hikes<br>
+  <input type="checkbox" id="toggleClimbing" checked>Climbing spots<br>
+
+  <h3>Add new element</h3>
+  <select id="newType">
+    <option value="">--Choose an option--</option>
+    <option value="hike">Hike</option>
+    <option value="climbing">Climbing spot</option>
+  </select>
+  <button id="startAdd">Add on the map</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css">
+
+<script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+
+<script src="script.js"></script>
+
+</body>
+</html>

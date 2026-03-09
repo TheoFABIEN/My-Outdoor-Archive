@@ -1,0 +1,25 @@
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: hiking_postgis
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: hiking
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+
+  api:
+    image: python:3.11
+    container_name: hiking_api
+    working_dir: /app
+    volumes:
+      - ./api:/app
+    command: bash -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgis
