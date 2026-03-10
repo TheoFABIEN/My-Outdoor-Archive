@@ -54,3 +54,7 @@ body {
 .popup-delete:hover {
   opacity: 1;
 }
+
+#toggleClimbing {
+    accent-color: orange;
+}
