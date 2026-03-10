@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from typing import Optional
 import psycopg2
 import psycopg2.extras
 import json
@@ -69,12 +70,11 @@ def read_climbing_spots():
 
 # ADDING HIKING SPOTS FROM MAP INTERFACE
 
-class NewSpot(BaseModel):
+class NewHike(BaseModel):
     name: str
-    notes: str | None = None
-    difficulty: int
-    affluence: int
-    gaz: bool
+    notes: Optional[str] = None
+    difficulty: Optional[int] = None
+    gaz: Optional[bool] = None
     lat: float
     lon: float
 
@@ -84,20 +84,26 @@ class NewClimbingSpot(BaseModel):
     geometry: dict
 
 @app.post("/add_hike")
-def add_hike(spot: NewSpot):
+def add_hike(hike: NewHike):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO hikes (name, difficulty, affluence, gaz, notes, geom)
+                INSERT INTO hikes (name, difficulty, gaz, notes, geom)
                 VALUES (
-                    %s,
                     %s,
                     %s,
                     %s,
                     %s,
                     ST_SetSRID(ST_MakePoint(%s,%s),4326)
                 )
-            """, (spot.name, spot.difficulty, spot.affluence, spot.gaz, spot.notes, spot.lon, spot.lat))
+            """, (
+                    hike.name, 
+                    hike.difficulty, 
+                    hike.gaz, 
+                    hike.notes, 
+                    hike.lon, 
+                    hike.lat
+                ))
 
     return {"status": "ok"}
 

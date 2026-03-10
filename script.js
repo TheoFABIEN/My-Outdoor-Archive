@@ -1,3 +1,7 @@
+// =========================
+// MAP INITIALISATION
+// =========================
+
 var map = L.map('map').setView([45.9, 6.1], 9);
 
 var hikesLayer = L.layerGroup().addTo(map);
@@ -8,6 +12,10 @@ L.tileLayer(
 ).addTo(map);
 
 
+// =========================
+// ICONS
+// =========================
+
 const orangeIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
@@ -16,6 +24,9 @@ const orangeIcon = new L.Icon({
 });
 
 
+// =========================
+// LOAD HIKES
+// =========================
 
 function loadHikes() {
 
@@ -39,29 +50,45 @@ function loadHikes() {
       .addTo(hikesLayer)
       .bindPopup(`
         <div class="popup-content">
-            <b>${hike.name}</b><br>
-            ${hike.notes || ""}
-            <br><br>
-            <button class="popup-delete" onclick="deleteHike(${hike.id})">🗑</button>
+          <b>${hike.name}</b><br>
+          ${hike.notes || ""}
+          <br><br>
+          <button class="popup-delete" onclick="deleteHike(${hike.id})">🗑</button>
         </div>
       `);
+
     });
 
   });
+
 }
 
+
+// =========================
+// DELETE HIKE
+// =========================
 
 function deleteHike(id) {
-    if (!confirm("Delete this hike ?")) return;
-    fetch(`http://localhost:8000/hikes/${id}`, {method: "DELETE"})
-    .then(res => res.json())
-    .then(() => {
-        alert("Hike deleted");
-        loadHikes();
-    })
-    .catch(err => console.error(err));
+
+  if (!confirm("Delete this hike ?")) return;
+
+  fetch(`http://localhost:8000/hikes/${id}`, {method: "DELETE"})
+  .then(res => res.json())
+  .then(() => {
+
+    alert("Hike deleted");
+
+    loadHikes();
+
+  })
+  .catch(err => console.error(err));
+
 }
 
+
+// =========================
+// LOAD CLIMBING SPOTS
+// =========================
 
 function loadClimbingSpots() {
 
@@ -91,7 +118,9 @@ function loadClimbingSpots() {
 }
 
 
-
+// =========================
+// FILTERS
+// =========================
 
 document.getElementById("applyFilters")
 .addEventListener("click", loadHikes);
@@ -107,8 +136,10 @@ document.getElementById("toggleClimbing")
 });
 
 
+// =========================
+// ADD HIKE MODE
+// =========================
 
-// Click mode for adding elements
 let addingMode = false;
 
 document.getElementById("startAdd").addEventListener("click", () => {
@@ -116,72 +147,95 @@ document.getElementById("startAdd").addEventListener("click", () => {
   const type = document.getElementById("newType").value;
 
   if (type !== "hike") {
-    alert("Pour les spots d'escalade, utilise l'outil polygon sur la carte.");
+    alert("Pour les spots d'escalade, utilise l'outil polygon.");
     return;
   }
 
   addingMode = true;
-    map.getContainer().style.cursor = "crosshair";
-  alert("Click on the map to add new hike");
+
+  map.getContainer().style.cursor = "crosshair";
+
+  alert("Click on the map to add a hike");
 
 });
 
-// Detect click on the map for getting coordinates
+
+// =========================
+// MAP CLICK EVENT
+// =========================
+
 map.on("click", function(e) {
 
   if (!addingMode) return;
 
-  console.log("Map click detected", e.latlng);
-
   const lat = e.latlng.lat;
   const lon = e.latlng.lng;
+
+  console.log("Map click:", lat, lon);
+
   const name = prompt("Name of the hike ?");
   if (!name) {
     addingMode = false;
+    map.getContainer().style.cursor = "";
     return;
   }
-  const notes = prompt("Notes about this place ?");
-  const difficulty = prompt("Difficulty of the hike ? (1-5)")
-  const gaz = prompt("Exposure to the void ?")
+
+  const notes = prompt("Notes ?") || "";
+
+  const difficultyInput = prompt("Difficulty (1-5) ?");
+  const difficulty = difficultyInput ? parseInt(difficultyInput) : null;
+
+  const gazInput = prompt("Exposure to void ? (yes/no)");
+  const gaz = gazInput ? gazInput.toLowerCase() === "yes" : null;
+
+  const payload = {
+    name: name,
+    difficulty: difficulty,
+    gaz: gaz,
+    notes: notes,
+    lat: lat,
+    lon: lon
+  };
+
+  console.log("Sending:", payload);
 
   fetch("http://localhost:8000/add_hike", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      name: name,
-      difficulty: difficulty,
-      gaz: gaz,
-      notes: notes,
-      lat: lat,
-      lon: lon
-    })
+    body: JSON.stringify(payload)
   })
   .then(res => res.json())
   .then(data => {
 
-    console.log("API response", data);
+    console.log("API response:", data);
 
-    alert("Randonnée ajoutée !");
+    alert("Hike added!");
 
-    loadHikes();   // recharge les markers
+    loadHikes();
 
     addingMode = false;
-    map.getContainer().style.cursor = ""; //cursor back to normal mode
+    map.getContainer().style.cursor = "";
+
   })
-  .catch(err => {
-    console.error("Erreur API", err);
-  });
+  .catch(err => console.error("API error:", err));
 
 });
 
 
+// =========================
+// INITIAL LOAD
+// =========================
+
 loadHikes();
 loadClimbingSpots();
 
-// Enabling drawing for adding climbing spots
-//
+
+// =========================
+// DRAW CLIMBING SPOTS
+// =========================
+
 var drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
@@ -200,11 +254,15 @@ var drawControl = new L.Control.Draw({
 
 map.addControl(drawControl);
 
+
 map.on(L.Draw.Event.CREATED, function (event) {
 
   var layer = event.layer;
+
   drawnItems.addLayer(layer);
+
   const geojson = layer.toGeoJSON();
+
   const name = prompt("Nom du spot ?");
   const notes = prompt("Notes ?");
 
@@ -221,8 +279,11 @@ map.on(L.Draw.Event.CREATED, function (event) {
   })
   .then(res => res.json())
   .then(() => {
-      alert("Spot ajouté !");
-      loadClimbingSpots();
+
+    alert("Spot ajouté !");
+
+    loadClimbingSpots();
+
   });
 
 });
