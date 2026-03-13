@@ -5,6 +5,7 @@
 var map = L.map('map').setView([45.924, 6.868], 9);
 
 var hikesLayer = L.layerGroup().addTo(map);
+var gpxLayer = L.layerGroup().addTo(map);
 var climbingLayer = L.layerGroup().addTo(map);
 
 L.tileLayer(
@@ -35,6 +36,12 @@ window.onload = locateUser;
 
 const orangeIcon = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-orange.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+const violetIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-violet.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
   iconSize: [25, 41],
   iconAnchor: [12, 41]
@@ -73,33 +80,8 @@ function loadHikes() {
           <button class="popup-delete" onclick="deleteHike(${hike.id})">🗑</button>
         </div>
       `);
-
     });
-
   });
-
-}
-
-
-// =========================
-// DELETE HIKE
-// =========================
-
-function deleteHike(id) {
-
-  if (!confirm("Delete this hike ?")) return;
-
-  fetch(`http://localhost:8000/hikes/${id}`, {method: "DELETE"})
-  .then(res => res.json())
-  .then(() => {
-
-    alert("Hike deleted");
-
-    loadHikes();
-
-  })
-  .catch(err => console.error(err));
-
 }
 
 
@@ -126,13 +108,62 @@ function loadClimbingSpots() {
 
       L.marker(center, {icon: orangeIcon})
       .addTo(climbingLayer)
-      .bindPopup(`<b>${spot.name}</b><br>${spot.notes}`);
-
+      .bindPopup(`
+        <div class="popup-content">
+          <b>${spot.name}</b><br>
+          ${spot.notes || ""}
+          <br><br>
+          <button class="popup-delete" onclick="deleteClimb(${spot.id})">🗑</button>
+        </div>
+      `);
     });
-
   });
-
 }
+
+
+// =========================
+// LOAD GPX FILE
+// =========================
+
+function loadGPXHikes() {
+  fetch("http://localhost:8000/gpx_hikes")
+    .then(res => res.json())
+    .then(data => {
+      gpxLayer.clearLayers();
+
+      data.forEach(hike => {
+        const geom = JSON.parse(hike.geom);
+
+        const line = L.geoJSON(geom, {
+          color: "purple",
+          weight: 4
+        }).addTo(gpxLayer);
+
+        // Get the center of the line
+        const center = line.getBounds().getCenter();
+
+        // Add a marker at the center
+        L.marker(center, { icon: violetIcon })
+          .addTo(gpxLayer)
+          .bindPopup(`
+            <div class="popup-content">
+              <b>${hike.name}</b><br>
+              <br><br>
+              <button class="popup-delete" onclick="deleteGPX(${hike.id})">🗑</button>
+            </div>
+        `);
+      });
+    });
+}
+
+
+// =========================
+// INITIAL LOAD
+// =========================
+
+loadHikes();
+loadClimbingSpots();
+loadGPXHikes();
 
 
 // =========================
@@ -146,11 +177,62 @@ document.getElementById("toggleHikes")
 .addEventListener("change", function() {
   this.checked ? map.addLayer(hikesLayer) : map.removeLayer(hikesLayer);
 });
-
+document.getElementById("toggleGPX")
+.addEventListener("change", function() {
+  this.checked ? map.addLayer(gpxLayer) : map.removeLayer(gpxLayer);
+});
 document.getElementById("toggleClimbing")
 .addEventListener("change", function() {
   this.checked ? map.addLayer(climbingLayer) : map.removeLayer(climbingLayer);
 });
+
+
+// =========================
+// DELETE HIKE
+// =========================
+
+function deleteHike(id) {
+
+  if (!confirm("Delete this hike ?")) return;
+
+  fetch(`http://localhost:8000/hikes/${id}`, {method: "DELETE"})
+  .then(res => res.json())
+  .then(() => {
+    alert("Hike deleted");
+    loadHikes();
+  })
+  .catch(err => console.error(err));
+}
+
+// =========================
+// DELETE CLIMBING SPOT
+// =========================
+
+function deleteClimb(id) {
+    if (!confirm("Delete this climbing spot ?")) return;
+  fetch(`http://localhost:8000/climbing_spots/${id}`, {method: "DELETE"})
+  .then(res => res.json())
+  .then(() => {
+    alert("Climbing spot deleted");
+    loadClimbingSpots();
+  })
+  .catch(err => console.error(err));
+}
+
+// =========================
+// DELETE GPX_HIKE
+// =========================
+
+function deleteGPX(id) {
+    if (!confirm("Delete this GPX hike ?")) return;
+  fetch(`http://localhost:8000/gpx_hikes/${id}`, {method: "DELETE"})
+  .then(res => res.json())
+  .then(() => {
+    alert("GPX hike deleted");
+    loadGPXHikes();
+  })
+  .catch(err => console.error(err));
+}
 
 
 // =========================
@@ -242,14 +324,6 @@ map.on("click", function(e) {
 
 
 // =========================
-// INITIAL LOAD
-// =========================
-
-loadHikes();
-loadClimbingSpots();
-
-
-// =========================
 // DRAW CLIMBING SPOTS
 // =========================
 
@@ -271,7 +345,6 @@ var drawControl = new L.Control.Draw({
 
 map.addControl(drawControl);
 
-
 map.on(L.Draw.Event.CREATED, function (event) {
 
   var layer = event.layer;
@@ -280,7 +353,7 @@ map.on(L.Draw.Event.CREATED, function (event) {
 
   const geojson = layer.toGeoJSON();
 
-  const name = prompt("Nom du spot ?");
+  const name = prompt("Name of the spot ?");
   const notes = prompt("Notes ?");
 
   fetch("http://localhost:8000/add_climbing_spot", {
@@ -304,3 +377,41 @@ map.on(L.Draw.Event.CREATED, function (event) {
   });
 
 });
+
+
+// =========================
+// SEND GPX FILE
+// =========================
+
+document.getElementById("uploadGPX").addEventListener("click", () => {
+
+  const fileInput = document.getElementById("gpxFile");
+
+  if (!fileInput.files.length) {
+    alert("Select a GPX file first");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", fileInput.files[0]);
+
+  fetch("http://localhost:8000/upload_gpx", {
+    method: "POST",
+    body: formData
+  })
+  .then(res => res.json())
+  .then(data => {
+
+    const notes = prompt("Notes ?") || "";
+
+    alert("GPX imported!");
+
+    loadGPXHikes();
+
+  });
+
+});
+
+
+
+

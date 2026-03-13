@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
 import psycopg2
 import psycopg2.extras
 import json
+import gpxpy
+
 
 origins = ["*"]
 
@@ -68,8 +70,7 @@ def read_climbing_spots():
 
 
 
-# ADDING HIKING SPOTS FROM MAP INTERFACE
-
+# HIKING SPOT MODEL
 class NewHike(BaseModel):
     name: str
     notes: Optional[str] = None
@@ -77,7 +78,7 @@ class NewHike(BaseModel):
     gaz: Optional[bool] = None
     lat: float
     lon: float
-
+# CLIMBING SPOT MODEL
 class NewClimbingSpot(BaseModel):
     name: str
     notes: str | None = None
@@ -119,6 +120,28 @@ def delete_hike(hike_id: int):
             )
     return {"status": "deleted"}
 
+# DELETING CLIMBING SPOTS
+@app.delete("/climbing_spots/{spot_id}")
+def delete_climbing_spot(spot_id: int):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM climbing_spots WHERE id = %s",
+                (spot_id,)
+            )
+    return {"status": "deleted"}
+
+# DELETING GPX HIKES
+@app.delete("/gpx_hikes/{gpx_id}")
+def delete_gpx(gpx_id: int):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM gpx_hikes WHERE id = %s",
+                (gpx_id,)
+            )
+    return {"status": "deleted"}
+
 
 # ADDING CLIMBING SPOTS FROM MAP INTERFACE
 
@@ -141,3 +164,59 @@ def add_climbing_spot(spot: NewClimbingSpot):
             """, (spot.name, spot.notes, json.dumps(spot.geometry)))
 
     return {"status": "ok"}
+
+
+# GPX IMPORT
+@app.post("/upload_gpx")
+async def upload_gpx(file: UploadFile = File(...)):
+
+    gpx_data = await file.read()
+    gpx = gpxpy.parse(gpx_data.decode())
+
+    name = gpx.name if gpx.name else "Undefined"
+
+    points = []
+
+    for track in gpx.tracks:
+        for segment in track.segments:
+            for p in segment.points:
+                points.append([p.longitude, p.latitude])
+
+    geojson = {
+        "type": "LineString",
+        "coordinates": points
+    }
+
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+
+            cur.execute("""
+            INSERT INTO gpx_hikes (name, geom)
+            VALUES (
+                %s,
+                ST_SetSRID(
+                    ST_GeomFromGeoJSON(%s),
+                    4326
+                )
+            )
+            """, (name, json.dumps(geojson)))
+
+    return {"status": "ok"}
+
+
+# GET GPX HIKES FROM DATABASE
+@app.get("/gpx_hikes")
+def get_gpx_hikes():
+
+    with get_conn() as conn:
+        with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
+
+            cur.execute("""
+            SELECT id, name, notes,
+            ST_AsGeoJSON(geom) as geom
+            FROM gpx_hikes
+            """)
+
+            hikes = cur.fetchall()
+
+    return hikes
