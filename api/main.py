@@ -46,13 +46,6 @@ def get_hikes(difficulty: int = Query(None, ge=1, le=5), gaz: bool = Query(None)
                 params.append(gaz)
             if filters:
                 sql += " WHERE " + " AND ".join(filters)
-            #cur.execute("""
-            #    SELECT id, name,
-            #    ST_X(geom) as lon,
-            #    ST_Y(geom) as lat,
-	        #notes
-            #    FROM hikes
-            #""")
             cur.execute(sql, params)
             hikes = cur.fetchall()
     return hikes
@@ -167,52 +160,65 @@ def add_climbing_spot(spot: NewClimbingSpot):
 
 
 # GPX IMPORT
+from fastapi import UploadFile, File, Form
+import gpxpy
+import json
+
 @app.post("/upload_gpx")
 async def upload_gpx(
-        file: UploadFile = File(...),
-        name: str = Form(None),
-        difficulty: int = Form(None),
-        gaz: bool = Form(None),
-        notes: str = Form(None)
-        ):
+    file: UploadFile = File(...),
+    name: str = Form(None),
+    difficulty: Optional[int] = Form(None),
+    gaz: Optional[bool] = Form(None),
+    notes: str = Form(None)
+):
 
     gpx_data = await file.read()
     gpx = gpxpy.parse(gpx_data.decode())
 
     if not name:
-        name = gpx.name if gpx.name else "Undefined"
+        name = gpx.name if gpx.name else "Unnamed hike"
 
     points = []
+    elevations = []
 
     for track in gpx.tracks:
         for segment in track.segments:
             for p in segment.points:
                 points.append([p.longitude, p.latitude])
+                elevations.append(p.elevation)
 
     geojson = {
         "type": "LineString",
         "coordinates": points
     }
 
+    distance_km = round(gpx.length_3d() / 1000, 2)
+    elevation_gain = int(gpx.get_uphill_downhill().uphill)
+    elevation_loss = int(gpx.get_uphill_downhill().downhill)
+
     with get_conn() as conn:
         with conn.cursor() as cur:
 
             cur.execute("""
-            INSERT INTO gpx_hikes (name, difficulty, gaz, notes, geom)
+            INSERT INTO gpx_hikes
+            (name, difficulty, gaz, notes, distance_km, elevation_gain, elevation_loss, geom)
             VALUES (
-                %s,
-                %s,
-                %s,
-                %s,
-                ST_SetSRID(
-                    ST_GeomFromGeoJSON(%s),
-                    4326
-                )
+                %s,%s,%s,%s,%s,%s,%s,
+                ST_SetSRID(ST_GeomFromGeoJSON(%s),4326)
             )
-            """, (name, difficulty, gaz, notes, json.dumps(geojson)))
+            """, (
+                name,
+                difficulty,
+                gaz,
+                notes,
+                distance_km,
+                elevation_gain,
+                elevation_loss,
+                json.dumps(geojson)
+            ))
 
     return {"status": "ok"}
-
 
 # GET GPX HIKES FROM DATABASE
 @app.get("/gpx_hikes")
@@ -223,6 +229,9 @@ def get_gpx_hikes():
 
             cur.execute("""
             SELECT id, name, notes,
+            distance_km,
+            elevation_gain,
+            elevation_loss,
             ST_AsGeoJSON(geom) as geom
             FROM gpx_hikes
             """)

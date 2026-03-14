@@ -152,10 +152,26 @@ function loadGPXHikes() {
               <b>${hike.name}</b><br>
               ${hike.notes || ""}
               <br><br>
-              <button class="popup-delete" 
-              onclick="deleteItem('gpx_hikes', ${hike.id}, loadGPXHikes)">🗑</button>
+              <div class="popup-footer">
+                <div class="popup-stats">
+                  ${hike.distance_km ? hike.distance_km + " km" : ""}
+                  ${hike.elevation_gain ? " | D+ " + hike.elevation_gain + " m" : ""}
+                  ${hike.elevation_loss ? " | D- " + hike.elevation_loss + " m" : ""}
+                </div>
+                <button class="popup-delete"
+                onclick="deleteItem('gpx_hikes', ${hike.id}, loadGPXHikes)">🗑</button>
+              </div>
             </div>
-        `);
+            `);
+          //.bindPopup(`
+          //  <div class="popup-content">
+          //    <b>${hike.name}</b><br>
+          //    ${hike.notes || ""}
+          //    <br><br>
+          //    <button class="popup-delete" 
+          //    onclick="deleteItem('gpx_hikes', ${hike.id}, loadGPXHikes)">🗑</button>
+          //  </div>
+          //`);
       });
     });
 }
