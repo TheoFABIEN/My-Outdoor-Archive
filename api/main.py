@@ -198,16 +198,18 @@ async def upload_gpx(
         with conn.cursor() as cur:
 
             cur.execute("""
-            INSERT INTO gpx_hikes (name, geom, notes)
+            INSERT INTO gpx_hikes (name, difficulty, gaz, notes, geom)
             VALUES (
+                %s,
+                %s,
+                %s,
                 %s,
                 ST_SetSRID(
                     ST_GeomFromGeoJSON(%s),
                     4326
-                ),
-                %s
+                )
             )
-            """, (name, json.dumps(geojson), notes))
+            """, (name, difficulty, gaz, notes, json.dumps(geojson)))
 
     return {"status": "ok"}
 

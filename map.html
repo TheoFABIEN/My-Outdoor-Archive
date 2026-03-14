@@ -15,6 +15,38 @@ height: 100vh;
 
 </head>
 
+
+<div id="gpxModal" class="modal">
+  <div class="modal-content">
+    <h2>Import GPX Track</h2>
+    <label>Name</label>
+    <input type="text" id="gpxName" placeholder="Name of the hike">
+    <label>Difficulty</label>
+    <select id="gpxDifficulty">
+      <option value="">Unknown</option>
+      <option value="1">1 - Easy</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5 - Hard</option>
+    </select>
+    <label>Exposure</label>
+    <select id="gpxGaz">
+      <option value="">Unknown</option>
+      <option value="true">Yes</option>
+      <option value="false">No</option>
+    </select>
+    <label>Notes</label>
+    <textarea id="gpxNotes" rows="6" placeholder="Notes about the hike..."></textarea>
+    <div class="modal-buttons">
+      <button id="submitGPX">Import</button>
+      <button id="cancelGPX">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
 <body>
 
 <div id="sidebar" style="padding:10px; background:#fff;">

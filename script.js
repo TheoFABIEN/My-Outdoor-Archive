@@ -366,21 +366,35 @@ document.getElementById("uploadGPX").addEventListener("click", () => {
     return;
   }
 
-  const name = prompt("Name of the GPX track ?");
-  const notes = prompt("Notes ?") || "";
+  document.getElementById("gpxModal").style.display = "flex";
 
-  const difficultyInput = prompt("Difficulty (1-5) ?");
-  const difficulty = difficultyInput ? parseInt(difficultyInput) : null;
+  document.getElementById("gpxName").value =
+    fileInput.files[0].name.replace(".gpx","");
 
-  const gazInput = prompt("Exposure to void ? (yes/no)");
-  const gaz = gazInput ? gazInput.toLowerCase() === "yes" : null;
+});
+
+document.getElementById("cancelGPX").addEventListener("click", () => {
+  document.getElementById("gpxModal").style.display = "none";
+});
+
+
+
+document.getElementById("submitGPX").addEventListener("click", () => {
+
+  const fileInput = document.getElementById("gpxFile");
+
+  const name = document.getElementById("gpxName").value;
+  const difficulty = document.getElementById("gpxDifficulty").value;
+  const gaz = document.getElementById("gpxGaz").value;
+  const notes = document.getElementById("gpxNotes").value;
 
   const formData = new FormData();
+
   formData.append("file", fileInput.files[0]);
   formData.append("name", name);
-  formData.append("notes", notes);
   formData.append("difficulty", difficulty);
   formData.append("gaz", gaz);
+  formData.append("notes", notes);
 
   fetch("http://localhost:8000/upload_gpx", {
     method: "POST",
@@ -388,7 +402,19 @@ document.getElementById("uploadGPX").addEventListener("click", () => {
   })
   .then(res => res.json())
   .then(() => {
+
     alert("GPX imported!");
+
+    document.getElementById("gpxModal").style.display = "none";
+
+    document.getElementById("gpxName").value = "";
+    document.getElementById("gpxDifficulty").value = "";
+    document.getElementById("gpxGaz").value = "";
+    document.getElementById("gpxNotes").value = "";
+    document.getElementById("gpxFile").value = "";
+
     loadGPXHikes();
+
   });
+
 });
