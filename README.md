@@ -12,5 +12,5 @@ This work aims to provide a self-hosted solution for storing your outdoor memori
 ## How to install ?
 Install on your NAS or every other home server using Docker Compose. After cloning the repo, just enter the command:
   
-  <code>docker compose up --build -d</code>
+  <code>docker compose up -d</code>
 
