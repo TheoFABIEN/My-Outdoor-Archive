@@ -23,3 +23,14 @@ services:
       - "8000:8000"
     depends_on:
       - postgis
+
+  webserver:
+    image: httpd:2.4
+    container_name: hiking_webserver
+    volumes:
+      - ./:/usr/local/apache2/htdocs/
+    ports:
+      - 3000:80
+    depends_on:
+      - api
+    restart: always
