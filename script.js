@@ -4,9 +4,9 @@
 
 var map = L.map('map').setView([45.924, 6.868], 9);
 
-var hikesLayer = L.layerGroup().addTo(map);
+var pointsLayer = L.layerGroup().addTo(map);
 var gpxLayer = L.layerGroup().addTo(map);
-var climbingLayer = L.layerGroup().addTo(map);
+var areasLayer = L.layerGroup().addTo(map);
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
@@ -49,36 +49,29 @@ const violetIcon = new L.Icon({
 
 
 // =========================
-// LOAD HIKES
+// LOAD POINTS
 // =========================
 
-function loadHikes() {
+function loadPoints() {
 
-  const difficulty = document.getElementById("difficulty").value;
-  const gaz = document.getElementById("gaz").value;
-
-  let url = "http://localhost:8000/hikes?";
-
-  if (difficulty) url += `difficulty=${difficulty}&`;
-  if (gaz) url += `gaz=${gaz}&`;
-
+  let url = "http://localhost:8000/points?";
   fetch(url)
   .then(res => res.json())
   .then(data => {
 
-    hikesLayer.clearLayers();
+    pointsLayer.clearLayers();
 
-    data.forEach(hike => {
+    data.forEach(point => {
 
-      L.marker([hike.lat, hike.lon])
-      .addTo(hikesLayer)
+      L.marker([point.lat, point.lon])
+      .addTo(pointsLayer)
       .bindPopup(`
         <div class="popup-content">
-          <b>${hike.name}</b><br>
-          ${hike.notes || ""}
+          <b>${point.name}</b><br>
+          ${point.notes || ""}
           <br><br>
           <button class="popup-delete" 
-          onclick="deleteItem('hikes', ${hike.id}, loadHikes)">🗑</button>
+          onclick="deleteItem('points', ${point.id}, loadPoints)">🗑</button>
         </div>
       `);
     });
@@ -87,35 +80,35 @@ function loadHikes() {
 
 
 // =========================
-// LOAD CLIMBING SPOTS
+// LOAD AREAS
 // =========================
 
-function loadClimbingSpots() {
+function loadAreas() {
 
-  fetch("http://localhost:8000/climbing_spots")
+  fetch("http://localhost:8000/areas")
   .then(res => res.json())
   .then(data => {
 
-    climbingLayer.clearLayers();
+    areasLayer.clearLayers();
 
-    data.forEach(spot => {
+    data.forEach(area => {
 
-      const geom = JSON.parse(spot.geom);
+      const geom = JSON.parse(area.geom);
 
       const layer = L.geoJSON(geom, {color: "orange"})
-      .addTo(climbingLayer);
+      .addTo(areasLayer);
 
       const center = layer.getBounds().getCenter();
 
       L.marker(center, {icon: orangeIcon})
-      .addTo(climbingLayer)
+      .addTo(areasLayer)
       .bindPopup(`
         <div class="popup-content">
-          <b>${spot.name}</b><br>
-          ${spot.notes || ""}
+          <b>${area.name}</b><br>
+          ${area.notes || ""}
           <br><br>
           <button class="popup-delete" 
-          onclick="deleteItem('climbing_spots', ${spot.id}, loadClimbingSpots)">🗑</button>
+          onclick="deleteItem('areas', ${area.id}, loadAreas)">🗑</button>
         </div>
       `);
     });
@@ -163,15 +156,6 @@ function loadGPXHikes() {
               </div>
             </div>
             `);
-          //.bindPopup(`
-          //  <div class="popup-content">
-          //    <b>${hike.name}</b><br>
-          //    ${hike.notes || ""}
-          //    <br><br>
-          //    <button class="popup-delete" 
-          //    onclick="deleteItem('gpx_hikes', ${hike.id}, loadGPXHikes)">🗑</button>
-          //  </div>
-          //`);
       });
     });
 }
@@ -181,8 +165,8 @@ function loadGPXHikes() {
 // INITIAL LOAD
 // =========================
 
-loadHikes();
-loadClimbingSpots();
+loadPoints();
+loadAreas();
 loadGPXHikes();
 
 
@@ -191,19 +175,19 @@ loadGPXHikes();
 // =========================
 
 document.getElementById("applyFilters")
-.addEventListener("click", loadHikes);
+.addEventListener("click", loadPoints);
 
-document.getElementById("toggleHikes")
+document.getElementById("togglePoints")
 .addEventListener("change", function() {
-  this.checked ? map.addLayer(hikesLayer) : map.removeLayer(hikesLayer);
+  this.checked ? map.addLayer(pointsLayer) : map.removeLayer(pointsLayer);
 });
 document.getElementById("toggleGPX")
 .addEventListener("change", function() {
   this.checked ? map.addLayer(gpxLayer) : map.removeLayer(gpxLayer);
 });
-document.getElementById("toggleClimbing")
+document.getElementById("toggleAreas")
 .addEventListener("change", function() {
-  this.checked ? map.addLayer(climbingLayer) : map.removeLayer(climbingLayer);
+  this.checked ? map.addLayer(areasLayer) : map.removeLayer(areasLayer);
 });
 
 
@@ -235,8 +219,8 @@ document.getElementById("startAdd").addEventListener("click", () => {
 
   const type = document.getElementById("newType").value;
 
-  if (type !== "hike") {
-    alert("Pour les spots d'escalade, utilise l'outil polygon.");
+  if (type !== "point") {
+    alert("For areas, use the polygon tool.");
     return;
   }
 
@@ -244,7 +228,7 @@ document.getElementById("startAdd").addEventListener("click", () => {
 
   map.getContainer().style.cursor = "crosshair";
 
-  alert("Click on the map to add a hike");
+  alert("Click on the map to add a point");
 
 });
 
@@ -262,7 +246,7 @@ map.on("click", function(e) {
 
   console.log("Map click:", lat, lon);
 
-  const name = prompt("Name of the hike ?");
+  const name = prompt("Name of this place ?");
   if (!name) {
     addingMode = false;
     map.getContainer().style.cursor = "";
@@ -270,17 +254,8 @@ map.on("click", function(e) {
   }
 
   const notes = prompt("Notes ?") || "";
-
-  const difficultyInput = prompt("Difficulty (1-5) ?");
-  const difficulty = difficultyInput ? parseInt(difficultyInput) : null;
-
-  const gazInput = prompt("Exposure to void ? (yes/no)");
-  const gaz = gazInput ? gazInput.toLowerCase() === "yes" : null;
-
   const payload = {
     name: name,
-    difficulty: difficulty,
-    gaz: gaz,
     notes: notes,
     lat: lat,
     lon: lon
@@ -288,7 +263,7 @@ map.on("click", function(e) {
 
   console.log("Sending:", payload);
 
-  fetch("http://localhost:8000/add_hike", {
+  fetch("http://localhost:8000/add_point", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -300,9 +275,9 @@ map.on("click", function(e) {
 
     console.log("API response:", data);
 
-    alert("Hike added!");
+    alert("Point of interest added!");
 
-    loadHikes();
+    loadPoints();
 
     addingMode = false;
     map.getContainer().style.cursor = "";
@@ -314,7 +289,7 @@ map.on("click", function(e) {
 
 
 // =========================
-// DRAW CLIMBING SPOTS
+// DRAW AREAS
 // =========================
 
 var drawnItems = new L.FeatureGroup();
@@ -343,10 +318,10 @@ map.on(L.Draw.Event.CREATED, function (event) {
 
   const geojson = layer.toGeoJSON();
 
-  const name = prompt("Name of the spot ?");
+  const name = prompt("Name of the area ?");
   const notes = prompt("Notes ?");
 
-  fetch("http://localhost:8000/add_climbing_spot", {
+  fetch("http://localhost:8000/add_area", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -360,9 +335,9 @@ map.on(L.Draw.Event.CREATED, function (event) {
   .then(res => res.json())
   .then(() => {
 
-    alert("Spot ajouté !");
+    alert("Area added !");
 
-    loadClimbingSpots();
+    loadAreas();
 
   });
 

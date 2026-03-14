@@ -27,100 +27,85 @@ def get_conn():
         password="postgres"
     )
 
-@app.get("/hikes")
-def get_hikes(difficulty: int = Query(None, ge=1, le=5), gaz: bool = Query(None)):
+@app.get("/points")
+def get_points(difficulty: int = Query(None, ge=1, le=5), gaz: bool = Query(None)):
     with get_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
 
-            sql = """SELECT id, name, difficulty, affluence, gaz, notes,
-                   ST_X(geom) as lon, ST_Y(geom) as lat, notes
-                   FROM hikes"""
+            sql = """SELECT id, name, notes,
+                   ST_X(geom) as lon, ST_Y(geom) as lat
+                   FROM points"""
             filters = []
             params = []
-
-            if difficulty is not None:
-                filters.append("difficulty = %s")
-                params.append(difficulty)
-            if gaz is not None:
-                filters.append("gaz = %s")
-                params.append(gaz)
-            if filters:
-                sql += " WHERE " + " AND ".join(filters)
             cur.execute(sql, params)
-            hikes = cur.fetchall()
-    return hikes
+            points = cur.fetchall()
+    return points
 
 
-@app.get("/climbing_spots")
-def read_climbing_spots():
+@app.get("/areas")
+def read_areas():
     with get_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
-                "SELECT id, name, notes, ST_AsGeoJSON(geom) AS geom FROM climbing_spots;"
+                "SELECT id, name, notes, ST_AsGeoJSON(geom) AS geom FROM areas;"
             )
-            spots = cur.fetchall()
-    return spots
+            areas = cur.fetchall()
+    return areas
 
 
 
-# HIKING SPOT MODEL
-class NewHike(BaseModel):
+# POINTS MODEL
+class NewPoint(BaseModel):
     name: str
     notes: Optional[str] = None
-    difficulty: Optional[int] = None
-    gaz: Optional[bool] = None
     lat: float
     lon: float
-# CLIMBING SPOT MODEL
-class NewClimbingSpot(BaseModel):
+# AREA MODEL
+class NewArea(BaseModel):
     name: str
     notes: str | None = None
     geometry: dict
 
-@app.post("/add_hike")
-def add_hike(hike: NewHike):
+@app.post("/add_point")
+def add_point(point: NewPoint):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute("""
-                INSERT INTO hikes (name, difficulty, gaz, notes, geom)
+                INSERT INTO points (name, notes, geom)
                 VALUES (
-                    %s,
-                    %s,
                     %s,
                     %s,
                     ST_SetSRID(ST_MakePoint(%s,%s),4326)
                 )
             """, (
-                    hike.name, 
-                    hike.difficulty, 
-                    hike.gaz, 
-                    hike.notes, 
-                    hike.lon, 
-                    hike.lat
+                    point.name, 
+                    point.notes, 
+                    point.lon, 
+                    point.lat
                 ))
 
     return {"status": "ok"}
 
 
-# DELETING HIKES
-@app.delete("/hikes/{hike_id}")
-def delete_hike(hike_id: int):
+# DELETING POINT
+@app.delete("/points/{point_id}")
+def delete_point(point_id: int):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "DELETE FROM hikes WHERE id = %s",
-                (hike_id,)
+                "DELETE FROM points WHERE id = %s",
+                (point_id,)
             )
     return {"status": "deleted"}
 
-# DELETING CLIMBING SPOTS
-@app.delete("/climbing_spots/{spot_id}")
-def delete_climbing_spot(spot_id: int):
+# DELETING AREAS
+@app.delete("/areas/{area_id}")
+def delete_area(area_id: int):
     with get_conn() as conn:
         with conn.cursor() as cur:
             cur.execute(
-                "DELETE FROM climbing_spots WHERE id = %s",
-                (spot_id,)
+                "DELETE FROM areas WHERE id = %s",
+                (area_id,)
             )
     return {"status": "deleted"}
 
@@ -136,16 +121,15 @@ def delete_gpx(gpx_id: int):
     return {"status": "deleted"}
 
 
-# ADDING CLIMBING SPOTS FROM MAP INTERFACE
+# ADDING AREAS FROM MAP INTERFACE
 
-@app.post("/add_climbing_spot")
-def add_climbing_spot(spot: NewClimbingSpot):
+@app.post("/add_area")
+def add_area(area: NewArea):
 
     with get_conn() as conn:
         with conn.cursor() as cur:
-
             cur.execute("""
-                INSERT INTO climbing_spots (name, notes, geom)
+                INSERT INTO areas (name, notes, geom)
                 VALUES (
                     %s,
                     %s,
@@ -154,7 +138,7 @@ def add_climbing_spot(spot: NewClimbingSpot):
                         4326
                     )
                 )
-            """, (spot.name, spot.notes, json.dumps(spot.geometry)))
+            """, (area.name, area.notes, json.dumps(area.geometry)))
 
     return {"status": "ok"}
 
