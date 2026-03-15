@@ -4,6 +4,7 @@
 <meta charset="utf-8"/>
 <title>⛰️ My Outdoor Archive</title>
 
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <link rel="stylesheet" href="style.css">
 
@@ -16,9 +17,12 @@ height: 100vh;
 </head>
 
 
+<body>
+
 <div id="gpxModal" class="modal">
   <div class="modal-content">
     <h2>Import GPX Track</h2>
+    <input type="file" id="gpxFile" accept=".gpx"><br><br>
     <label>Name</label>
     <input type="text" id="gpxName" placeholder="Name of the hike">
     <label>Difficulty</label>
@@ -45,13 +49,22 @@ height: 100vh;
   </div>
 </div>
 
+<div id="sidebar">
 
+  <button id="openGPXModal">Import GPX file</button>
 
-<body>
+  <div id="newTypeBox">
+  <h3>Add other element</h3>
+  <select id="newType">
+    <option value="">--Choose an option--</option>
+    <option value="point">Point of interest</option>
+    <option value="area">Area</option>
+  </select>
+  <button id="startAdd">Add on the map</button>
+  </div>
 
-<div id="sidebar" style="padding:10px; background:#fff;">
-  <h3>Hike filters : </h3>
-
+  <div id="filtersBox">
+  <h3>Hike filters</h3>
   <p>
   <label for="difficulty">Difficulty of hikes :</label>
   <select id="difficulty">
@@ -63,7 +76,6 @@ height: 100vh;
     <option value="5">5</option>
   </select>
   </p>
-
   <p>
   <label for="gaz">Exposure to the void :</label>
   <select id="gaz">
@@ -72,36 +84,36 @@ height: 100vh;
     <option value="false">No</option>
   </select>
   </p>
-
   <button id="applyFilters">Apply</button>
+  </div>
 
+  <div id="layersBox">
   <h3>Layers</h3>
-  <input type="checkbox" id="toggleGPX" checked>GPX tracks<br>
-  <input type="checkbox" id="togglePoints" checked>Points of interest<br>
-  <input type="checkbox" id="toggleAreas" checked>Areas<br>
+  <label class="toggle">
+    <input type="checkbox" id="toggleGPX" checked>
+    <span class="slider"></span>
+    <span class="label-text">GPX tracks</span>
+  </label>
+  <label class="toggle">
+    <input type="checkbox" id="togglePoints" checked>
+    <span class="slider"></span>
+    <span class="label-text">Points of interest</span>
+  </label>
+  <label class="toggle">
+    <input type="checkbox" id="toggleAreas" checked>
+    <span class="slider"></span>
+    <span class="label-text">Areas</span>
+  </label>
 
+  </div>
 
-  <h3>Add GPX</h3>
-    <input type="file" id="gpxFile" accept=".gpx">
-    <button id="uploadGPX">Import GPX</button>
-
-  <h3>Add new element</h3>
-  <select id="newType">
-    <option value="">--Choose an option--</option>
-    <option value="point">Point of interest</option>
-    <option value="area">Area</option>
-  </select>
-  <button id="startAdd">Add on the map</button>
 </div>
+
 
 <div id="map"></div>
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css">
-
 <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
-
 <script src="script.js"></script>
 
 </body>

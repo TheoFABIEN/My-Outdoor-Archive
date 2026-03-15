@@ -346,31 +346,30 @@ map.on(L.Draw.Event.CREATED, function (event) {
 // SEND GPX FILE
 // =========================
 
-document.getElementById("uploadGPX").addEventListener("click", () => {
-
-  const fileInput = document.getElementById("gpxFile");
-
-  if (!fileInput.files.length) {
-    alert("Select a GPX file first");
-    return;
-  }
-
+document.getElementById("openGPXModal").addEventListener("click", () => {
   document.getElementById("gpxModal").style.display = "flex";
-
-  document.getElementById("gpxName").value =
-    fileInput.files[0].name.replace(".gpx","");
-
 });
 
 document.getElementById("cancelGPX").addEventListener("click", () => {
   document.getElementById("gpxModal").style.display = "none";
 });
 
+document.getElementById("gpxFile").addEventListener("change", function() {
 
+  if (!this.files.length) return;
+
+  document.getElementById("gpxName").value =
+    this.files[0].name.replace(".gpx","");
+});
 
 document.getElementById("submitGPX").addEventListener("click", () => {
 
   const fileInput = document.getElementById("gpxFile");
+
+  if (!fileInput.files.length) {
+    alert("Select a GPX file");
+    return;
+  }
 
   const name = document.getElementById("gpxName").value;
   const difficulty = document.getElementById("gpxDifficulty").value;
@@ -396,11 +395,11 @@ document.getElementById("submitGPX").addEventListener("click", () => {
 
     document.getElementById("gpxModal").style.display = "none";
 
+    document.getElementById("gpxFile").value = "";
     document.getElementById("gpxName").value = "";
     document.getElementById("gpxDifficulty").value = "";
     document.getElementById("gpxGaz").value = "";
     document.getElementById("gpxNotes").value = "";
-    document.getElementById("gpxFile").value = "";
 
     loadGPXHikes();
   });
