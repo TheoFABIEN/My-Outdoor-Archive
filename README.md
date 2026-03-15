@@ -9,6 +9,10 @@ This work aims to provide a self-hosted solution for storing your outdoor memori
 - Visualize everything on an interactive map
 - Filtering options
 
+<p align="center">
+  <img src="assets/MyOutdoorArchive_demo.png" width=600/>
+</p>
+
 ## Usage
 Install on your NAS or every other home server using Docker Compose. After cloning the repo, just enter the command:
   
