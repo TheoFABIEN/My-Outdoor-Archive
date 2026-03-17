@@ -6,6 +6,7 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet-draw/dist/leaflet.draw.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 <link rel="stylesheet" href="style.css">
 
 <style>
@@ -114,7 +115,19 @@ height: 100vh;
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-draw/dist/leaflet.draw.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 <script src="script.js"></script>
+
+<script>
+var geocoder = L.Control.geocoder({
+  defaultMarkGeocode: false
+})
+.on('markgeocode', function (e) {
+  var bbox = e.geocode.bbox;
+  map.fitBounds(bbox);
+})
+.addTo(map);
+</script>
 
 </body>
 </html>

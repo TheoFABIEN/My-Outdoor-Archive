@@ -12,6 +12,7 @@ L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
 ).addTo(map);
 
+
 // =========================
 // GEOLOCATION
 // =========================
@@ -96,10 +97,7 @@ function loadAreas() {
     data.forEach(area => {
 
       const geom = JSON.parse(area.geom);
-
-      const layer = L.geoJSON(geom, {color: "orange"})
-      .addTo(areasLayer);
-
+      const layer = L.geoJSON(geom, {color: "orange"}).addTo(areasLayer);
       const center = layer.getBounds().getCenter();
 
       L.marker(center, {icon: orangeIcon})
@@ -141,6 +139,7 @@ function loadGPXHikes() {
           weight: 4
         }).addTo(gpxLayer);
         const center = line.getBounds().getCenter();
+
         L.marker(center, { icon: violetIcon })
           .addTo(gpxLayer)
           .bindPopup(`
