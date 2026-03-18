@@ -67,6 +67,18 @@ height: 100vh;
   <div id="filtersBox">
   <h3>Hike filters</h3>
   <p>
+    <div class="distance-header">
+      <label>Max distance :</label><br>
+      <span id="distanceValue">50+ km</span>
+    </div>
+    <input type="range"
+           id="distanceSlider"
+           min="0"
+           max="50"
+           step="1"
+           value="50">
+  </p>
+  <p>
   <label for="difficulty">Difficulty of hikes :</label>
   <select id="difficulty">
     <option value="">All</option>

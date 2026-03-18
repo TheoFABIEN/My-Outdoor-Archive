@@ -124,6 +124,9 @@ function loadGPXHikes() {
   const difficulty = document.getElementById("difficulty").value;
   const gaz = document.getElementById("gaz").value;
 
+  const maxDistance = parseFloat(distanceSlider.value);
+  const isUnlimited = maxDistance === parseFloat(distanceSlider.max);
+
   let url = "http://localhost:8000/gpx_hikes?";
   if (difficulty) url += `difficulty=${difficulty}&`;
   if (gaz) url += `gaz=${gaz}&`;
@@ -133,6 +136,9 @@ function loadGPXHikes() {
     .then(data => {
       gpxLayer.clearLayers();
       data.forEach(hike => {
+        const distance = hike.distance_km;
+        if (distance == null) return;
+        if (!isUnlimited && distance > maxDistance) return;
         const geom = JSON.parse(hike.geom);
         const line = L.geoJSON(geom, {
           color: "purple",
@@ -168,17 +174,25 @@ function loadGPXHikes() {
 
 
 // =========================
-// INITIAL LOAD
-// =========================
-
-loadPoints();
-loadAreas();
-loadGPXHikes();
-
-
-// =========================
 // FILTERS
 // =========================
+
+const distanceSlider = document.getElementById("distanceSlider");
+const distanceLabel = document.getElementById("distanceValue");
+
+function updateDistanceLabel() {
+  const value = parseInt(distanceSlider.value);
+
+  if (value === parseInt(distanceSlider.max)) {
+    distanceLabel.textContent = value + "+ km";
+  } else {
+    distanceLabel.textContent = value + " km";
+  }
+}
+
+distanceSlider.addEventListener("input", updateDistanceLabel);
+distanceSlider.addEventListener("change", loadGPXHikes);
+updateDistanceLabel();
 
 document.getElementById("applyFilters")
 .addEventListener("click", loadGPXHikes);
@@ -424,3 +438,13 @@ map.on("popupopen", function(e) {
   }
 
 });
+
+
+// =========================
+// INITIAL LOAD
+// =========================
+
+loadPoints();
+loadAreas();
+loadGPXHikes();
+
