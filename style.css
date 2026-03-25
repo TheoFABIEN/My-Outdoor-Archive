@@ -156,15 +156,13 @@ body {
 	cursor: pointer;
 	transition: all 0.2s ease;
 }
-
 #openGPXModal:hover {
 	background: transparent;
-	color: #181717;
+	color: var(--ui-dark);
 	outline: 3px #181717 solid;
 }
 
-
-#newType {
+.selectButton {
 	background: #6E6D70;
 	color: white;
 	border: none;
@@ -172,52 +170,27 @@ body {
 	font-size: 14px;
 	transition: all 0.2s ease;
     cursor: pointer;
+    text-align: center;
 }
 
-#startAdd {
-	background: #6E6D70;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	font-size: 14px;
-	transition: all 0.2s ease;
-	padding: 2px 14px;
-    cursor: pointer;
-    margin-top: 5px;
-}
-
-#difficulty {
-	background: #6E6D70;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	font-size: 14px;
-	transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-#gaz {
-	background: #6E6D70;
-	color: white;
-	border: none;
-	border-radius: 8px;
-	font-size: 14px;
-	transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-#applyFilters {
+.applyButton {
+    width: 80%;
 	background: var(--ui-grey);
 	padding: 2px 14px;
 	color: white;
 	border: none;
 	border-radius: 8px;
 	font-size: 14px;
+    font-weight: 600;
 	transition: all 0.2s ease;
     cursor: pointer;
+    text-align: center;
+    margin: 0 auto;
+    display: block;
+    margin-top: 10px;
 }
 
-#gaz:hover, #applyFilters:hover, #difficulty:hover, #startAdd:hover, #newType:hover {
+.applyButton:hover, .selectButton:hover {
 	background: transparent;
 	color: var(--ui-dark);
 	outline: 1px var(--ui-dark) solid;
@@ -226,7 +199,7 @@ body {
 #newTypeBox, #filtersBox, #layersBox {
 	outline: 2px var(--ui-border) solid;
 	border-radius: 8px;
-	margin-top: 26px;
+	margin-top: 20px;
     padding-bottom: 5px;
     padding-left: 5px;
 }
