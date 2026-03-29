@@ -9,6 +9,7 @@ This work aims to provide a self-hosted solution for storing your outdoor memori
 - Visualize everything on an interactive map
 - Use filtering options
 - Find places with the search bar
+- Enjoy a fully responsive interface (mobile & desktop friendly)
 
 <p align="center">
   <img src="assets/MyOutdoorArchive_demo.png" width=600/>
