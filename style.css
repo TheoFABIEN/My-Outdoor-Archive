@@ -51,10 +51,11 @@ body {
 	bottom: 0;
 	width: 300px;
 	background: var(--ui-light);
-	padding: 10px;
 	overflow-y: auto;
+    overflow-x: hidden;
 	box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
 	z-index: 1000;
+	padding-top: 10px;
     padding-left: 30px;
     padding-right: 30px;
 }
@@ -93,7 +94,7 @@ body {
     transform: translateX(-50%);
     width: 320px;
     max-width: 60%;
-    z-index: 2000;
+    z-index: 1000;
 }
 
 .leaflet-popup-tip {
