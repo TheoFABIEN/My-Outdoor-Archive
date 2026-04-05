@@ -19,16 +19,14 @@ services:
     volumes:
       - ./api:/app
     command: bash -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
-    ports:
-      - "8000:8000"
     depends_on:
       - postgis
 
-  webserver:
-    image: httpd:2.4
-    container_name: hiking_webserver
-    volumes:
-      - ./:/usr/local/apache2/htdocs/
+  web:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    container_name: hiking_app_ui
     ports:
       - 3000:80
     depends_on:
