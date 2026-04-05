@@ -20,5 +20,5 @@ Install on your NAS or every other home server using Docker Compose. After cloni
   
   <code>docker compose up -d</code>
 
-You can then access the interface via `http://localhost:3000`.
+You can then access the interface via [http://localhost:3000](http://localhost:3000).
 
