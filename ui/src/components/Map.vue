@@ -377,10 +377,22 @@ watch(() => [props.isSidebarOpen, props.isMobile], () => {
 .popup-delete:hover {
 	opacity: 1;
 }
-
 @media (max-width: 768px) {
   .map {
     left: 0;
+  }
+}
+@media (max-width: 768px) {
+  .leaflet-control-geocoder-icon {
+    display: none !important;
+  }
+  .leaflet-control-geocoder {
+    top: 8px;
+  }
+    .leaflet-control-geocoder-form input {
+    height: 36px;         
+    line-height: 36px;    
+    padding: 0 10px;      
   }
 }
 </style>
