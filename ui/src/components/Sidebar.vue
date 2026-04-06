@@ -119,8 +119,8 @@ function exportFilters() {
     width: 100%;
     box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     background-color: white;
-        border-radius: 8px;
-        margin-top: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
     padding-bottom: 15px;
     padding-top: 5px;
     padding-left: 5px;

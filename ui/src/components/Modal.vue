@@ -1,7 +1,7 @@
 <template>
 <div id="gpxModal" class="modal">
   <div class="modal-content">
-    <h2>Import GPX file</h2>
+    <h3>Import GPX file</h3>
     <input type="file" id="gpxFile" accept=".gpx" @change="handleFile"><br><br>
     <label>Name</label>
     <input type="text" id="gpxName" v-model="name" placeholder="Name of the hike">
@@ -23,8 +23,8 @@
     <label>Notes</label>
     <textarea id="gpxNotes" v-model="notes" rows="6" placeholder="Notes about the hike..."></textarea>
     <div class="modal-buttons">
-      <button id="submitGPX" @click="submit">Import</button>
-      <button id="cancelGPX" @click="close">Cancel</button>
+      <button id="submitGPX" class="modalButton" @click="submit">Import</button>
+      <button id="cancelGPX" class="modalButton" @click="close">Cancel</button>
     </div>
   </div>
 </div>

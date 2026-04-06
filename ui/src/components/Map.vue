@@ -1,6 +1,10 @@
 <template>
-	<div
-		ref="mapContainer" class="map"></div>
+	<div ref="mapContainer" class="map"></div>
+  <EditModal 
+  v-if="isEditModalOpen"
+  :item="editingItem"
+  @close="isEditModalOpen = false"
+  @updated="reloadAll" />
 </template>
 
 <script setup>
@@ -20,6 +24,7 @@ import "leaflet-control-geocoder"
 import "leaflet-control-geocoder/dist/Control.Geocoder.css"
 import "leaflet-draw/dist/leaflet.draw.css"
 import "leaflet-draw"
+import EditModal from "@/components/EditModal.vue"
 
 const filterStore = useFilterStore()
 const drawStore = drawModeStore()
@@ -36,6 +41,9 @@ let gpxLayer = null
 const points = ref([])
 const areas = ref([])
 const gpx = ref([])
+
+const editingItem = ref(null)
+const isEditModalOpen = ref(false)
 
 function locateUser() {
 	if (navigator.geolocation) {
@@ -62,24 +70,25 @@ function fitMapToData() {
 }
 
 function renderPoints() {
-	pointsLayer.clearLayers()
-	points.value.forEach((point) => {
-		L.marker([point.lat, point.lon], {icon: blueIcon})
-    .bindPopup(standardPopup(point))
-    .addTo(pointsLayer)
-	})
+    pointsLayer.clearLayers()
+    points.value.forEach((point) => {
+        L.marker([point.lat, point.lon], {icon: blueIcon})
+            .bindPopup(standardPopup(point, "points"))
+            .addTo(pointsLayer)
+    })
 }
 function renderAreas() {
-	areasLayer.clearLayers()
-	areas.value.forEach((area) => {
-		const geom = JSON.parse(area.geom)
-		const layer = L.geoJSON(geom, { color: "orange" }).addTo(areasLayer)
-		const center = layer.getBounds().getCenter()
-		L.marker(center, { icon: orangeIcon })
-    .bindPopup(standardPopup(center))
-    .addTo(areasLayer)
-	})
+    areasLayer.clearLayers()
+    areas.value.forEach((area) => {
+        const geom = JSON.parse(area.geom)
+        const layer = L.geoJSON(geom, { color: "orange" }).addTo(areasLayer)
+        const center = layer.getBounds().getCenter()
+        L.marker(center, { icon: orangeIcon })
+            .bindPopup(standardPopup(area, "areas"))
+            .addTo(areasLayer)
+    })
 }
+
 function renderGPX() {
 	gpxLayer.clearLayers()
 	gpx.value.forEach((hike) => {
@@ -102,27 +111,48 @@ function renderGPX() {
 	})
 }
 
+function handleEdit(type, id) {
+  let item = null
+  const numericId = Number(id)
+  if (type === "points") { item = points.value.find(p => p.id == numericId) }
+  if (type === "areas") { item = areas.value.find(a => a.id == numericId) }
+  if (type === "gpx_hikes") { item = gpx.value.find(g => g.id == numericId) }
+  if (item) {
+    editingItem.value = { ...item, type }
+    isEditModalOpen.value = true
+  }
+}
+
 onMounted(async () => {
   map = L.map(mapContainer.value)
   map.zoomControl.setPosition("bottomright")
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "&copy; OpenStreetMap contributors",
   }).addTo(map)
+ 
   map.on("popupopen", (e) => {
     const marker = e.popup._source
     if (marker.getLatLng) {
       map.flyTo(marker.getLatLng(), map.getZoom())
     }
-    const btn = e.popup._contentNode.querySelector(".popup-delete")
-    if (btn) {
-      btn.addEventListener("click", () => {
-        const id = btn.dataset.id
-        const type = btn.dataset.type
-        handleDelete(type, id)
-      })
+    const container = e.popup.getElement()
+    const deleteBtn = container.querySelector(".popup-delete")
+    if (deleteBtn) {
+      deleteBtn.onclick = () => {
+        handleDelete(deleteBtn.dataset.type, deleteBtn.dataset.id)
+      }
     }
-  })
+    const editBtn = container.querySelector(".popup-edit")
+    if (editBtn) {
+      editBtn.onclick = () => {
+        handleEdit(editBtn.dataset.type, editBtn.dataset.id)
+        map.closePopup()
+      }
+    }
+  })  
+
   locateUser()
+
   L.Control.geocoder({
     defaultMarkGeocode: false,
     collapsed: false,
@@ -220,6 +250,16 @@ defineExpose({
   reloadGPX,
   invalidateSize
 })
+
+async function reloadAll() {
+  points.value = await getPoints()
+  areas.value = await getAreas()
+  gpx.value = await getGPX()
+
+  renderPoints()
+  renderAreas()
+  renderGPX()
+}
 
 watch(
 	() => [filterStore.maxDistance, 
@@ -339,8 +379,18 @@ watch(() => [props.isSidebarOpen, props.isMobile], () => {
 	opacity: 0.5;
 	cursor: pointer;
 }
-.popup-delete:hover {
-	opacity: 1;
+.popup-edit {
+	position: absolute;
+	bottom: -8px;
+	right: 0px;
+	background: none;
+	border: none;
+	font-size: 12px;
+	opacity: 0.5;
+	cursor: pointer;
+}
+.popup-edit:hover .popup-delete:hover{
+  opacity: 1;
 }
 @media (max-width: 768px) {
   .map {

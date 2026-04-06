@@ -216,3 +216,42 @@ def get_gpx_hikes(difficulty: int = Query(None, ge=1, le=5), gaz: bool = Query(N
             hikes = cur.fetchall()
 
     return hikes
+
+
+class UpdateItem(BaseModel):
+    name: str
+    notes: Optional[str] = None
+    difficulty: Optional[int] = None
+    gaz: Optional[bool] = None
+
+@app.put("/points/{item_id}")
+def update_point(item_id: int, item: UpdateItem):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE points SET name = %s, notes = %s WHERE id = %s",
+                (item.name, item.notes, item_id)
+            )
+    return {"status": "updated"}
+
+@app.put("/areas/{item_id}")
+def update_area(item_id: int, item: UpdateItem):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "UPDATE areas SET name = %s, notes = %s WHERE id = %s",
+                (item.name, item.notes, item_id)
+            )
+    return {"status": "updated"}
+
+@app.put("/gpx_hikes/{item_id}")
+def update_gpx(item_id: int, item: UpdateItem):
+    with get_conn() as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                """UPDATE gpx_hikes 
+                   SET name = %s, notes = %s, difficulty = %s, gaz = %s 
+                   WHERE id = %s""",
+                (item.name, item.notes, item.difficulty, item.gaz, item_id)
+            )
+    return {"status": "updated"}

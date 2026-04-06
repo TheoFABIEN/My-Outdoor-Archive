@@ -40,7 +40,7 @@ function handleUploaded() { mapRef.value?.reloadGPX() }
 
 <template>
   <div :class="['app-container', { 'mobile-mode': isMobile, 'sidebar-open': isSidebarOpen }]">
-    <button id="mobileToggle" @click="toggleSidebar" v-if="isMobile">
+    <button id="mobileToggle" @click="toggleSidebar" v-if="(isMobile && !isModalOpen)">
       {{ isSidebarOpen ? '✕' : '☰' }}
     </button>
     <Map ref="mapRef" :is-sidebar-open="isSidebarOpen" :is-mobile="isMobile"></Map>

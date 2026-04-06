@@ -49,3 +49,13 @@ export function uploadGPX(formData) {
 		body: formData,
 	})
 }
+
+export function updateItem(type, id, data) {
+	return request(`${type}/${id}`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(data),
+	})
+}
