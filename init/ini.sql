@@ -27,3 +27,7 @@ CREATE TABLE IF NOT EXISTS gpx_hikes (
     elevation_loss INTEGER,
     geom GEOMETRY(LineString, 4326)
 );
+
+CREATE INDEX IF NOT EXISTS idx_points_geom ON points USING GIST (geom);
+CREATE INDEX IF NOT EXISTS idx_areas_geom ON areas USING GIST (geom);
+CREATE INDEX IF NOT EXISTS idx_gpx_hikes_geom ON gpx_hikes USING GIST (geom);
