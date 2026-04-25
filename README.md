@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/MyOutdoorArchive_banner.png" />
+  <img src="images/MyOutdoorArchive_banner.png" />
 </p>
 
-A self-hosted app to archive your outdoor adventures — hikes, climbs, scrambles, and everything in between. Import your GPX tracks, attach photos, write notes, and browse everything on an interactive map. Your data lives on your own machine. 
+A self-hosted app to archive your outdoor adventures — hikes, climbs, scrambles, and everything in between. Import your GPX tracks, attach photos, write notes, and browse everything on an interactive map. Your data lives on your own machine.
 
 ## Features
 
@@ -14,7 +14,7 @@ A self-hosted app to archive your outdoor adventures — hikes, climbs, scramble
 - Responsive interface — works on desktop and mobile
 
 <p align="center">
-  <img src="assets/MyOutdoorArchive_demo.png" width=600/>
+  <img src="images/MyOutdoorArchive_demo.png" width=600/>
 </p>
 
 ## Usage
@@ -26,6 +26,7 @@ git clone https://github.com/TheoFABIEN/My-Outdoor-Archive.git
 cd My-Outdoor-Archive
 docker compose up -d
 ```
+
 Then open [http://localhost:3000](http://localhost:3000) in your browser. That's it.
 
 ## Data & Privacy
