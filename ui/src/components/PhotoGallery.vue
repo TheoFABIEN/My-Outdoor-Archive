@@ -100,7 +100,17 @@ async function loadPhotos() {
 }
 
 function handleFiles(e) {
-  pendingFiles.value = Array.from(e.target.files)
+  const MAX_MB = 15
+  const MAX_BYTES = MAX_MB * 1024 * 1024
+  const files = Array.from(e.target.files)
+  const tooBig = files.filter(f => f.size > MAX_BYTES)
+  if (tooBig.length) {
+    alert(`These files exceed the ${MAX_MB}MB limit: \n${tooBig.map(f => f.name).join("\n")}`)
+    fileInput.value.value = ""
+    pendingFiles.value = []
+    return
+  }
+  pendingFiles.value = files
 }
 
 async function submitPhotos() {

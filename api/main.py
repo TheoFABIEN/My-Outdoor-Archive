@@ -268,20 +268,22 @@ def update_gpx(item_id: int, item: UpdateItem):
 #      PHOTOS HANDLING
 ########################################################
 
-
 @app.post("/photos")
 async def upload_photo(
     hike_id: int = Form(...),
     caption: str = Form(None),
     file: UploadFile = File(...)
 ):
+    content = await file.read()
+    MAX_BYTES = 15 * 1024 * 1024
+    if len(content) > MAX_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 15MB limit")
     ext = os.path.splitext(file.filename)[1].lower()
     if ext not in [".jpg", ".jpeg", ".png", ".webp"]:
         raise HTTPException(status_code=400, detail="Unsupported format")
     filename = f"{hike_id}_{int(__import__('time').time())}{ext}"
     filepath = os.path.join(UPLOAD_DIR, filename)
     async with aiofiles.open(filepath, "wb") as f:
-        content = await file.read()
         await f.write(content)
     with get_conn() as conn:
         with conn.cursor() as cur:
