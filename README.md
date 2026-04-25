@@ -2,15 +2,16 @@
   <img src="assets/MyOutdoorArchive_banner.png" />
 </p>
 
-This work aims to provide a self-hosted solution for storing your outdoor memories.
+A self-hosted app to archive your outdoor adventures — hikes, climbs,scrambles, and everything in between. Import your GPX tracks, attach photos, write notes, and browse everything on an interactive map. Your data lives on your own machine. 
+
+## Features
 
 - Import and view GPX tracks
-- Create points of interest or areas
-- Add text, photos and metadata for each hike
-- Visualize everything on an interactive map
+- Create points of interest and areas
+- Add descriptions, photos and metadata to each entry
 - Use filtering options
 - Find places with the search bar
-- Enjoy a fully responsive interface (mobile & desktop friendly)
+- Responsive interface — works on desktop and mobile
 
 <p align="center">
   <img src="assets/MyOutdoorArchive_demo.png" width=600/>
@@ -22,4 +23,8 @@ Install on your NAS or every other home server using Docker Compose. After cloni
 
 <code>docker compose up -d</code>
 
-You can then access the interface via [http://localhost:3000](http://localhost:3000).
+Then open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Data & Privacy
+
+Everything stays on your machine. No account, no cloud sync, not telemetry. The map tiles come from OpenStreetMap and that is the only third-party service involved.
