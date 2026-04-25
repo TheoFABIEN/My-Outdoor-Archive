@@ -2,7 +2,7 @@
   <img src="assets/MyOutdoorArchive_banner.png" />
 </p>
 
-A self-hosted app to archive your outdoor adventures — hikes, climbs,scrambles, and everything in between. Import your GPX tracks, attach photos, write notes, and browse everything on an interactive map. Your data lives on your own machine. 
+A self-hosted app to archive your outdoor adventures — hikes, climbs, scrambles, and everything in between. Import your GPX tracks, attach photos, write notes, and browse everything on an interactive map. Your data lives on your own machine. 
 
 ## Features
 
@@ -19,11 +19,15 @@ A self-hosted app to archive your outdoor adventures — hikes, climbs,scrambles
 
 ## Usage
 
-Install on your NAS or every other home server using Docker Compose. After cloning the repo, just enter the command:
+The only prerequisite is Docker. No API key or external account required.
 
-<code>docker compose up -d</code>
+<code>
+git clone https://github.com/TheoFABIEN/My-Outdoor-Archive.git
+cd My-Outdoor-Archive
+docker compose up -d
+</code>
 
-Then open [http://localhost:3000](http://localhost:3000) in your browser.
+Then open [http://localhost:3000](http://localhost:3000) in your browser. That's it.
 
 ## Data & Privacy
 
