@@ -234,8 +234,10 @@ onMounted(loadPhotos)
 /* Upload */
 .photo-upload {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 6px;
+  align-items: center;
 }
 
 .upload-label {
@@ -255,7 +257,7 @@ onMounted(loadPhotos)
   font-size: 13px;
   border: 1px solid var(--ui-border);
   border-radius: 6px;
-  width: 100%;
+  min-width: 0;
   box-sizing: border-box;
 }
 
@@ -351,6 +353,14 @@ onMounted(loadPhotos)
   &:hover {
     opacity: 1;
   }
+}
+
+
+.applyButton {
+  width: auto;
+  margin-top: 0;
+  padding: 6px 12px;
+  font-size: 13px;
 }
 
 </style>
