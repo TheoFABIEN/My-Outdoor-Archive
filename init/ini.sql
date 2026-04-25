@@ -33,7 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_areas_geom ON areas USING GIST (geom);
 CREATE INDEX IF NOT EXISTS idx_gpx_hikes_geom ON gpx_hikes USING GIST (geom);
 
 CREATE TABLE IF NOT EXISTS photos (
-    id SERIAL PRIMAY KEY,
+    id SERIAL PRIMARY KEY,
     hike_id INTEGER REFERENCES gpx_hikes(id) ON DELETE CASCADE,
     filename TEXT NOT NULL,
     caption TEXT
