@@ -276,7 +276,7 @@ async def upload_photo(
     file: UploadFile = File(...)
 ):
     if item_type not in ("gpx_hikes", "points", "areas"):
-        raise HTTPException(status_code=400, detail="item_type invalide")
+        raise HTTPException(status_code=400, detail="Invalid item_type")
     content = await file.read()
     MAX_BYTES = 15 * 1024 * 1024
     if len(content) > MAX_BYTES:
@@ -300,7 +300,7 @@ async def upload_photo(
 @app.get("/photos/{item_type}/{item_id}")
 def get_photos(item_type: str, item_id: int):
     if item_type not in ("gpx_hikes", "points", "areas"):
-        raise HTTPException(status_code=400, detail="item_type invalide")
+        raise HTTPException(status_code=400, detail="Invalid item_type")
     with get_conn() as conn:
         with conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor) as cur:
             cur.execute(
@@ -317,7 +317,7 @@ def delete_photo(photo_id: int):
             cur.execute("SELECT filename FROM photos WHERE id = %s", (photo_id,))
             row = cur.fetchone()
             if not row:
-                raise HTTPException(status_code=404, detail="Photo introuvable")
+                raise HTTPException(status_code=404, detail="Photo not found")
             filepath = os.path.join(UPLOAD_DIR, row["filename"])
             if os.path.exists(filepath):
                 os.remove(filepath)

@@ -55,7 +55,7 @@ async function submit() {
     emit("close")
   } catch (e) {
     console.error("Update failed", e)
-    alert("Erreur lors de la sauvegarde : " + e.message)
+    alert("Error while saving: " + e.message)
   }
 }
 </script>
