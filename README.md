@@ -1,6 +1,12 @@
 <p align="center">
-  <img src="images/MyOutdoorArchive_banner.png" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="images/banner-dark.svg">
+  <source media="(prefers-color-scheme: light)" srcset="images/banner-light.svg">
+  <img alt="Fallback image description" src="images/banner-light.svg">
+</picture>
 </p>
+
+<br>
 
 A self-hosted app to archive your outdoor adventures — hikes, climbs, scrambles, and everything in between. Import your GPX tracks, attach photos, write notes, and browse everything on an interactive map. Your data lives on your own machine.
 
