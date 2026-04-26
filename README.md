@@ -20,7 +20,7 @@ A self-hosted app to archive your outdoor adventures — hikes, climbs, scramble
 - Responsive interface — works on desktop and mobile
 
 <p align="center">
-  <img src="images/MyOutdoorArchive_demo.png" width=600/>
+  <img src="images/Trailkeepr_demo.png" width=600/>
 </p>
 
 ## Usage
