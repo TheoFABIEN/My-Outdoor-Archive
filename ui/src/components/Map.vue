@@ -2,6 +2,7 @@
   <div ref="mapContainer" class="map"></div>
 
   <MapPopup
+    ref="mapPopupRef"
     :visible="popupState.visible"
     :item="popupState.item"
     :position="popupState.position"
@@ -19,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, defineExpose } from "vue"
+import { ref, reactive, onMounted, watch, defineExpose, nextTick } from "vue"
 import maplibregl from "maplibre-gl"
 import "maplibre-gl/dist/maplibre-gl.css"
 import MapboxDraw from "@mapbox/mapbox-gl-draw"
@@ -47,6 +48,7 @@ const gpx = ref([])
 const editingItem = ref(null)
 const isEditModalOpen = ref(false)
 const pendingJump = ref(null)
+const mapPopupRef = ref(null)
 
 // Terrain elevation
 const is3D = ref(false)
@@ -75,13 +77,26 @@ function getPopupPosition(lngLat) {
   }
 }
 
-function openPopup(properties, lngLat) {
-  popupState.position = getPopupPosition(lngLat)
+async function openPopup(properties, lngLat) {
   popupState.item = { ...properties }
   popupState.lngLat = lngLat
   popupState.visible = true
-  map.flyTo({ center: lngLat })
+  await nextTick()
+  const popupHeight = mapPopupRef.value?.getHeight() ?? 200
+  const totalOffsetPx = ~~(popupHeight/2)
+  const markerPixel = map.project(lngLat)
+  const targetPixel = {
+    x: markerPixel.x,
+    y: markerPixel.y - totalOffsetPx,
+  }
+  const targetLngLat = map.unproject([targetPixel.x, targetPixel.y])
+
+  map.flyTo({ center: targetLngLat, duration: 400 })
+
+  popupState.position = getPopupPosition(lngLat)
 }
+
+
 
 function trackPopupOnMove() {
   map.on("move", () => {
@@ -294,15 +309,39 @@ function setupLayerInteractions() {
   INTERACTIVE_LAYERS.forEach((layerId) => {
     map.on("mouseenter", layerId, () => { map.getCanvas().style.cursor = "pointer" })
     map.on("mouseleave", layerId, () => { map.getCanvas().style.cursor = "" })
-    map.on("click", layerId, (e) => {
+
+    const handleMarkerTap = (e) => {
       e.preventDefault()
       const feature = e.features[0]
-      const coords  = feature.geometry.coordinates
+      const coords = feature.geometry.coordinates
       const lngLat = new maplibregl.LngLat(coords[0], coords[1])
-      openPopup(e.features[0].properties, lngLat)
-    })
+      openPopup(feature.properties, lngLat)
+    }
+
+    map.on("click", layerId, handleMarkerTap)
+    map.on("touchend", layerId, handleMarkerTap)
   })
+
+
   map.on("click", (e) => { if (!e.defaultPrevented) closePopup() })
+  
+  let touchStartPos = null
+  map.getCanvas().addEventListener("touchstart", (e) => {
+    if (e.touches.length === 1) {
+      touchStartPos = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    } else {
+      touchStartPos = null // pinch-to-zoom → ignorer
+    }
+  }, { passive: true })
+  
+  map.getCanvas().addEventListener("touchend", (e) => {
+    if (!touchStartPos) return
+    const touch = e.changedTouches[0]
+    const dx = Math.abs(touch.clientX - touchStartPos.x)
+    const dy = Math.abs(touch.clientY - touchStartPos.y)
+    if (dx > 8 || dy > 8) return
+    if (!e.defaultPrevented) closePopup()
+  })
 }
 
 // ── Draw mode ───────────────────────────────────────────────────

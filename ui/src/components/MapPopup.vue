@@ -24,7 +24,9 @@
   </Teleport>
 </template>
 
+
 <script setup>
+import { ref, watch, nextTick, defineExpose } from "vue"
 import PhotoGallery from "@/components/PhotoGallery.vue"
 
 const props = defineProps({
@@ -34,15 +36,23 @@ const props = defineProps({
 })
 
 defineEmits(["close", "edit", "delete"])
+
+const popupEl = ref(null)
+function getHeight() {
+  return popupEl.value?.offsetHeight ?? 0
+}
+
+defineExpose({ getHeight })
 </script>
 
 
 <style scoped>
 .map-popup-anchor {
   position: fixed;
-  z-index: 500;
   pointer-events: none;
   transform: translate(-50%, calc(-100% - 41px - 8px));
+  will-change: transform;
+  z-index: 500;
 }
 
 .map-popup {
@@ -50,11 +60,12 @@ defineEmits(["close", "edit", "delete"])
   backdrop-filter: blur(6px);
   border-radius: 10px;
   padding: 14px 16px 12px;
-  min-width: 220px;
-  max-width: 300px;
+  width: 280px;
+  max-width: calc(100vw - 32px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
   pointer-events: all;
   font-size: 14px;
+  box-sizing: border-box;
 }
 
 .popup-close {
