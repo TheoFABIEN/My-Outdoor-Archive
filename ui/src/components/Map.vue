@@ -307,7 +307,8 @@ onMounted(async () => {
     maxZoom: currentBasemap.value.maxZoom,
     pixelRatio: window.devicePixelRatio || 1,
   })
-
+  map.dragRotate.disable()
+  map.touchZoomRotate.disableRotation()
   layers.value = useMapLayers(map)
   interactions.value = useMapInteractions(map, mapPopupRef)
 
@@ -403,6 +404,15 @@ watch(
 )
 watch(() => [props.isSidebarOpen, props.isMobile], () => {
   setTimeout(() => map?.resize(), 200)
+})
+watch(is3D, (val) => {
+  if (val) {
+    map.dragRotate.enable()
+    map.touchZoomRotate.enableRotation()
+  } else {
+    map.dragRotate.disable()
+    map.touchZoomRotate.disableRotation()
+  }
 })
 </script>
 
