@@ -19,9 +19,7 @@ A self-hosted app to archive your outdoor adventures — hikes, climbs, scramble
 - Find places with the search bar
 - Responsive interface — works on desktop and mobile
 
-<p align="center">
-  <img src="images/Trailkeepr_demo.png" width=600/>
-</p>
+<table><tr><td><img src="images/Trailkeepr_demo.png"></td><td><img src="images/Trailkeepr_demo_3d.png"></td></tr></table>
 
 ## Usage
 
@@ -66,7 +64,3 @@ Then edit .env with your own values.
 >
 > <ins>**This will permanently delete all your archived hikes, points, and photos.**</ins> Make sure to back up anything important before doing this.
 
-
-## Data & Privacy
-
-Everything stays on your machine. No account, no cloud sync, not telemetry. The map tiles come from OpenStreetMap and that is the only third-party service involved.
