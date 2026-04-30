@@ -30,6 +30,7 @@ import { getPoints, getAreas, getGPX, deleteItem } from "@/utils/api"
 import { useMapLayers } from "@/utils/useMapLayers"
 import { useMapInteractions } from "@/utils/useMapInteractions"
 import { useMapDraw } from "@/utils/useMapDraw"
+import { useMapBasemaps, BASEMAPS } from "@/utils/useMapBasemaps"
 import MapPopup from "@/components/MapPopup.vue"
 import EditModal from "@/components/EditModal.vue"
 
@@ -38,6 +39,7 @@ const props = defineProps(["isSidebarOpen", "isMobile"])
 
 const mapContainer = ref(null)
 const drawHandler = ref(null)
+const basemaps = ref(null)
 let map = null
 let dataLoaded = false
 
@@ -121,104 +123,30 @@ function flyToResult({ bbox, center }) {
   }
 }
 
-// ── Basemaps ──────────────────────────────────────────────────────
-const BASEMAPS = [
-  {
-    id: "osm", label: "🌍", maxZoom: 18,
-    style: {
-      version: 8,
-      sources: { osm: { type: "raster", tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 19, attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' } },
-      layers: [{ id: "osm-layer", type: "raster", source: "osm" }],
-    },
-  },
-  {
-    id: "topo", label: "🗺", maxZoom: 16,
-    style: {
-      version: 8,
-      sources: { topo: { type: "raster", tiles: ["https://tile.opentopomap.org/{z}/{x}/{y}.png"], tileSize: 256, maxzoom: 17, attribution: '© <a href="https://opentopomap.org">OpenTopoMap</a> · © OpenStreetMap contributors' } },
-      layers: [{ id: "topo-layer", type: "raster", source: "topo" }],
-    },
-  },
-  {
-    id: "satellite", label: "📷", maxZoom: 19,
-    style: {
-      version: 8,
-      sources: { ign: { type: "raster", tiles: ["https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&FORMAT=image/jpeg&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}"], tileSize: 256, maxzoom: 19, attribution: '© <a href="https://www.ign.fr">IGN Géoportail</a>' } },
-      layers: [{ id: "satellite-layer", type: "raster", source: "ign" }],
-    },
-  },
-]
-
-const currentBasemap = ref(BASEMAPS[0])
-
-// ── BasemapControl ────────────────────────────────────────────────
-class BasemapControl {
-  onAdd(m) {
-    this._map = m
-    this._container = document.createElement("div")
-    this._container.className = "maplibregl-ctrl maplibregl-ctrl-group basemap-control"
-    this._render()
-    return this._container
-  }
-  onRemove() {
-    this._container.parentNode?.removeChild(this._container)
-    this._map = null
-  }
-  _render() {
-    this._container.innerHTML = ""
-    BASEMAPS.forEach((bm) => {
-      const btn = document.createElement("button")
-      btn.textContent = bm.label
-      btn.title = bm.label
-      btn.className = "basemap-btn" + (currentBasemap.value.id === bm.id ? " active" : "")
-      btn.onclick = () => switchBasemap(bm)
-      this._container.appendChild(btn)
-    })
-    const sep = document.createElement("div")
-    sep.className = "basemap-sep"
-    this._container.appendChild(sep)
-    const btn3d = document.createElement("button")
-    btn3d.textContent = "3D"
-    btn3d.title = is3D.value ? "Disable 3D relief" : "Enable 3D relief"
-    btn3d.className = "basemap-btn" + (is3D.value ? " active" : "")
-    btn3d.onclick = () => { toggle3D(); this.refresh() }
-    this._container.appendChild(btn3d)
-  }
-  refresh() { this._render() }
-}
-
-let basemapControl = null
-
-function switchBasemap(bm) {
-  if (currentBasemap.value.id === bm.id) return
-  const center = map.getCenter()
-  const zoom = Math.min(map.getZoom(), bm.maxZoom)
-  const bearing = map.getBearing()
-  const pitch = map.getPitch()
-  currentBasemap.value = bm
-  map.setMaxZoom(bm.maxZoom)
-  map.setStyle(bm.style)
-  pendingJump.value = { center, zoom, bearing, pitch }
-}
-
 // ── onMounted ─────────────────────────────────────────────────────
 onMounted(async () => {
   map = new maplibregl.Map({
     container: mapContainer.value,
-    style: currentBasemap.value.style,
+    style: BASEMAPS[0].style,
     center: [6.868, 45.924],
     zoom: 6,
-    maxZoom: currentBasemap.value.maxZoom,
+    maxZoom: BASEMAPS[0].maxZoom,
     pixelRatio: window.devicePixelRatio || 1,
   })
+
+  layers.value = useMapLayers(map)
+  interactions.value = useMapInteractions(map, mapPopupRef)
+  basemaps.value = useMapBasemaps(map, is3D, toggle3D, pendingJump)
+  basemaps.value.initBasemapControl()
+
   map.dragRotate.disable()
   map.touchZoomRotate.disableRotation()
   layers.value = useMapLayers(map)
   interactions.value = useMapInteractions(map, mapPopupRef)
 
   map.addControl(new maplibregl.NavigationControl(), "bottom-right")
-  basemapControl = new BasemapControl()
-  map.addControl(basemapControl, "bottom-right")
+  basemaps.value = useMapBasemaps(map, is3D, toggle3D, pendingJump)
+  basemaps.value.initBasemapControl()
 
   drawHandler.value = useMapDraw(map, layers, points, areas)
   drawHandler.value.initDraw()
@@ -262,7 +190,7 @@ onMounted(async () => {
       fitMapToData()
     }
 
-    basemapControl?.refresh()
+    basemaps.value?.refreshControl()
 
     if (is3D.value) {
       map.setTerrain({ source: "terrain", exaggeration: 1.5 })
