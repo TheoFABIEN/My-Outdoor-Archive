@@ -29,6 +29,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue"
 
@@ -87,6 +88,7 @@ function onClickOutside(e) {
 onMounted(() => document.addEventListener("mousedown", onClickOutside))
 onUnmounted(() => document.removeEventListener("mousedown", onClickOutside))
 </script>
+
 
 <style scoped>
 .searchbar-wrapper {

@@ -39,23 +39,19 @@ function handleSearch(result) { mapRef.value?.flyToResult(result) }
     <button id="mobileToggle" @click="toggleSidebar" v-if="isMobile && !isModalOpen">
       {{ isSidebarOpen ? '✕' : '☰' }}
     </button>
-
     <Map
       ref="mapRef"
       :is-sidebar-open="isSidebarOpen"
       :is-mobile="isMobile"
     />
-
     <SearchBar
       v-show="!isMobile || !isSidebarOpen"
       @select="handleSearch"
     />
-
     <Sidebar
       v-show="!isMobile || isSidebarOpen"
       @openModal="openModal"
     />
-
     <Modal v-if="isModalOpen" @close="closeModal" @uploaded="handleUploaded" />
   </div>
 </template>
